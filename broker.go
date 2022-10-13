@@ -7,7 +7,7 @@ type Broker interface {
 	Address() string
 	Connect() error
 	Disconnect() error
-	Publish(topic string, m *Message, opts ...PublishOption) error
+	Publish(topic string, msg any, opts ...PublishOption) error
 	Subscribe(topic string, h Handler, opts ...SubscribeOption) (Subscriber, error)
 	String() string
 }
@@ -17,16 +17,10 @@ type Broker interface {
 // message and optional Ack method to acknowledge receipt of the message.
 type Handler func(Event) error
 
-// Message is a message send/received from the broker.
-type Message struct {
-	Header map[string]string
-	Body   []byte
-}
-
 // Event is given to a subscription handler for processing.
 type Event interface {
 	Topic() string
-	Message() *Message
+	Message() any
 	Ack() error
 	Error() error
 }
