@@ -34,6 +34,8 @@ type SubscribeOptions struct {
 	// will create a shared subscription where each
 	// receives a subset of messages.
 	Queue string
+	// NewMessage will be called to create a new message instance.
+	NewMessage func() any
 	// Other options for implementations of the interface
 	// can be stored in a context
 	Context context.Context
@@ -125,6 +127,12 @@ func Secure(b bool) Option {
 func TLSConfig(t *tls.Config) Option {
 	return func(o *Options) {
 		o.TLSConfig = t
+	}
+}
+
+func NewMessage(m func() any) SubscribeOption {
+	return func(o *SubscribeOptions) {
+		o.NewMessage = m
 	}
 }
 
