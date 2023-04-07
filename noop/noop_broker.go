@@ -109,30 +109,37 @@ func (b *NoopBroker) Publish(topic string, msg any, opts ...broker.PublishOption
 		}
 	}
 
+	var wg sync.WaitGroup
 	for _, hs := range qhs {
 		if len(hs) == 0 {
 			continue
 		}
-		h := hs[0]
-		handler := h.handler
-		resultType := h.resultType
-		evt := &E{t: topic}
+		wg.Add(1)
+		go func(hs []H, wg *sync.WaitGroup) {
+			defer wg.Done()
+			for _, h := range hs {
+				handler := h.handler
+				resultType := h.resultType
+				evt := &E{t: topic}
 
-		if resultType != nil {
-			evt.m = clone.Clone(resultType)
-			err = b.opts.Codec.Unmarshal(body, evt.m)
-			if err != nil && eh != nil {
-				evt.m = body
-				evt.e = err
-				_ = eh(evt)
-				continue
+				if resultType != nil {
+					evt.m = clone.Clone(resultType)
+					err = b.opts.Codec.Unmarshal(body, evt.m)
+					if err != nil && eh != nil {
+						evt.m = body
+						evt.e = err
+						_ = eh(evt)
+						continue
+					}
+				}
+				if evt.m == nil {
+					evt.m = body
+				}
+				_ = handler(evt)
 			}
-		}
-		if evt.m == nil {
-			evt.m = body
-		}
-		_ = handler(evt)
+		}(hs, &wg)
 	}
+	wg.Wait()
 	return nil
 }
 
