@@ -1,4 +1,4 @@
-package marshaler
+package broker
 
 import (
 	"encoding/json"
@@ -6,11 +6,11 @@ import (
 
 type JsonMarshaler struct{}
 
-func (j JsonMarshaler) Marshal(v interface{}) ([]byte, error) {
+func (j JsonMarshaler) Marshal(v any) ([]byte, error) {
 	return json.Marshal(v)
 }
 
-func (j JsonMarshaler) Unmarshal(d []byte, v interface{}) error {
+func (j JsonMarshaler) Unmarshal(d []byte, v any) error {
 	return json.Unmarshal(d, v)
 }
 

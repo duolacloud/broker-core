@@ -1,10 +1,10 @@
-package noop
+package broker
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
-	"github.com/duolacloud/broker-core"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,18 +16,23 @@ type User struct {
 func TestNoopBroker(t *testing.T) {
 	ch := make(chan *User)
 
-	b := NewBroker()
-	_ = b.Connect()
+	b := NewNoopBroker()
 
-	b.Subscribe("test", func(e broker.Event) error {
-		ch <- e.Message().(*User)
+	b.Subscribe("test", func(e Event) error {
+		m := e.Message()
+		u := &User{}
+		_ = json.Unmarshal(m.Body, u)
+		ch <- u
 		return nil
-	}, broker.ResultType(&User{}))
+	})
 
 	go func() {
 		time.Sleep(3 * time.Second)
-		b.Publish("test", &User{Name: "jack", Age: 21})
-		b.Publish("test", &User{Name: "rose", Age: 30})
+		buf, _ := json.Marshal(&User{Name: "jack", Age: 21})
+		b.Publish("test", &Message{Body: buf})
+
+		buf, _ = json.Marshal(&User{Name: "rose", Age: 30})
+		b.Publish("test", &Message{Body: buf})
 	}()
 
 	u1 := <-ch

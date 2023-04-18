@@ -34,8 +34,7 @@ type SubscribeOptions struct {
 	// will create a shared subscription where each
 	// receives a subset of messages.
 	Queue string
-	// Indicate the result type for codec.
-	ResultType any
+
 	// Other options for implementations of the interface
 	// can be stored in a context
 	Context context.Context
@@ -127,12 +126,6 @@ func Secure(b bool) Option {
 func TLSConfig(t *tls.Config) Option {
 	return func(o *Options) {
 		o.TLSConfig = t
-	}
-}
-
-func ResultType(t any) SubscribeOption {
-	return func(o *SubscribeOptions) {
-		o.ResultType = t
 	}
 }
 
