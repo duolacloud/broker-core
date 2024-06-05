@@ -1,5 +1,9 @@
 package broker
 
+import (
+	"context"
+)
+
 // Broker is an interface used for asynchronous messaging.
 type Broker interface {
 	Init(...Option) error
@@ -7,7 +11,7 @@ type Broker interface {
 	Address() string
 	Connect() error
 	Disconnect() error
-	Publish(topic string, msg *Message, opts ...PublishOption) error
+	Publish(ctx context.Context, topic string, msg *Message, opts ...PublishOption) error
 	Subscribe(topic string, h Handler, opts ...SubscribeOption) (Subscriber, error)
 	String() string
 }
@@ -15,7 +19,7 @@ type Broker interface {
 // Handler is used to process messages via a subscription of a topic.
 // The handler is passed a publication interface which contains the
 // message and optional Ack method to acknowledge receipt of the message.
-type Handler func(Event) error
+type Handler func(context.Context, Event) error
 
 // Message is a message send/received from the broker.
 type Message struct {
