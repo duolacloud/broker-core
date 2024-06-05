@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -14,11 +15,12 @@ type User struct {
 }
 
 func TestNoopBroker(t *testing.T) {
+	ctx := context.Background()
 	ch := make(chan *User)
 
 	b := NewNoopBroker()
 
-	b.Subscribe("test", func(e Event) error {
+	b.Subscribe("test", func(ctx context.Context, e Event) error {
 		m := e.Message()
 		u := &User{}
 		_ = json.Unmarshal(m.Body, u)
@@ -29,10 +31,10 @@ func TestNoopBroker(t *testing.T) {
 	go func() {
 		time.Sleep(3 * time.Second)
 		buf, _ := json.Marshal(&User{Name: "jack", Age: 21})
-		b.Publish("test", &Message{Body: buf})
+		b.Publish(ctx, "test", &Message{Body: buf})
 
 		buf, _ = json.Marshal(&User{Name: "rose", Age: 30})
-		b.Publish("test", &Message{Body: buf})
+		b.Publish(ctx, "test", &Message{Body: buf})
 	}()
 
 	u1 := <-ch

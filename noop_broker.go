@@ -2,7 +2,7 @@ package broker
 
 import (
 	"sync"
-
+	"context"
 	"github.com/google/uuid"
 )
 
@@ -93,7 +93,7 @@ func (b *noopBroker) String() string {
 	return "noop"
 }
 
-func (b *noopBroker) Publish(topic string, msg *Message, opts ...PublishOption) (err error) {
+func (b *noopBroker) Publish(ctx context.Context, topic string, msg *Message, opts ...PublishOption) (err error) {
 	b.RLock()
 	subs, ok := b.Subscribers[topic]
 	b.RUnlock()
@@ -122,10 +122,10 @@ func (b *noopBroker) Publish(topic string, msg *Message, opts ...PublishOption) 
 				message: v,
 				opts:    b.opts,
 			}
-			if err := sub.handler(p); err != nil {
+			if err := sub.handler(ctx, p); err != nil {
 				p.err = err
 				if eh := b.opts.ErrorHandler; eh != nil {
-					eh(p)
+					eh(ctx, p)
 				}
 			}
 		}(sub, &wg)
