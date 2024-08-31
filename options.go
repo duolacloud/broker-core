@@ -24,6 +24,7 @@ type PublishOptions struct {
 	// Other options for implementations of the interface
 	// can be stored in a context
 	Context context.Context
+	ShardingKey string
 }
 
 type SubscribeOptions struct {
@@ -48,6 +49,12 @@ type PublishOption func(*PublishOptions)
 func PublishContext(ctx context.Context) PublishOption {
 	return func(o *PublishOptions) {
 		o.Context = ctx
+	}
+}
+
+func WithShardingKey(v string) PublishOption {
+	return func(o *PublishOptions) {
+		o.ShardingKey = v
 	}
 }
 
